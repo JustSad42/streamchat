@@ -105,7 +105,7 @@
       $('updText').textContent = 'Installing… StreamChat will reopen in a moment.';
     } catch (e) {
       $('updSpin').hidden = true;
-      $('updTitle').textContent = info ? 'The update didn't install' : 'You're up to date';
+      $('updTitle').textContent = info ? "The update didn't install" : "You're up to date";
       $('updText').textContent = '';
       $('updErr').textContent = String(e);
       $('updErr').hidden = !info;

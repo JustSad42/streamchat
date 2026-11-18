@@ -36,6 +36,25 @@ npx tsc --noEmit -p .
 if ($LASTEXITCODE) { throw "type check failed" }
 node --test "test/*.test.ts"
 if ($LASTEXITCODE) { throw "server tests failed" }
+# Syntax-check every browser script, including inline <script> blocks (a broken launcher page hangs on "Starting…").
+$tmpJs = Join-Path ([IO.Path]::GetTempPath()) "streamchat-check"
+New-Item -ItemType Directory -Force $tmpJs | Out-Null
+$n = 0
+foreach ($f in Get-ChildItem "$root\desktop\ui", "$root\web" -Recurse -Include *.html) {
+    foreach ($m in [regex]::Matches((Get-Content $f.FullName -Raw), '(?s)<script(?![^>]*\bsrc=)([^>]*)>(.*?)</script>')) {
+        $ext = if ($m.Groups[1].Value -match 'module') { 'mjs' } else { 'js' }
+        $p = Join-Path $tmpJs "inline$($n++).$ext"
+        Set-Content $p $m.Groups[2].Value
+        node --check $p
+        if ($LASTEXITCODE) { throw "syntax error in a <script> block of $($f.FullName)" }
+    }
+}
+foreach ($f in Get-ChildItem "$root\web" -Recurse -Include *.js) {
+    $p = Join-Path $tmpJs "file.mjs"; Copy-Item $f.FullName $p -Force
+    node --check $p
+    if ($LASTEXITCODE) { throw "syntax error in $($f.FullName)" }
+}
+Remove-Item $tmpJs -Recurse -Force
 node scripts/bundle.mjs
 node --build-sea sea-config.json
 if ($LASTEXITCODE) { throw "server exe build failed" }
