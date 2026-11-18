@@ -10,7 +10,8 @@
 set -euo pipefail
 
 REPO="JustSad42/streamchat"
-DIR="/opt/streamchat"
+DIR="${STREAMCHAT_DIR:-/opt/streamchat}"
+UNITS="${STREAMCHAT_UNITS:-/etc/systemd/system}"
 COMPOSE="$DIR/docker-compose.yml"
 
 say()  { [ "${QUIET:-}" = 1 ] || printf '\033[1;35m==>\033[0m %s\n' "$*"; }
@@ -21,16 +22,17 @@ fetch() { curl -fsSL --connect-timeout 15 --max-time 120 --retry 2 -H 'User-Agen
   || curl -4 -fsSL --connect-timeout 15 --max-time 120 --retry 2 -H 'User-Agent: streamchat-update' "$@"; }
 dc() { docker compose -f "$COMPOSE" -p streamchat "$@"; }
 
-ts_dns() { tailscale status --json 2>/dev/null | grep -o '"DNSName": *"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)"/\1/; s/\.$//'; }
+# Helpers end in "|| true": under pipefail a grep with no match would otherwise end the script silently.
+ts_dns() { tailscale status --json 2>/dev/null | grep -o '"DNSName": *"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)"/\1/; s/\.$//' || true; }
 ts_used_ports() { tailscale serve status --json 2>/dev/null | tr -d ' \n' | grep -o '"[0-9]\{2,5\}":{"\(HTTPS\|HTTP\|TCPForward\)"' | grep -o '^"[0-9]*"' | tr -d '"' || true; }
 ts_port_for() { # which HTTPS port on the tailnet already forwards to this local port
-  tailscale serve status --json 2>/dev/null | tr -d ' \n' | grep -o "\"[^\"]*:[0-9]*\":{\"Handlers\":{\"/\":{\"Proxy\":\"http://127.0.0.1:$1\"" | head -1 | sed 's/^"[^:]*:\([0-9]*\)".*/\1/'
+  tailscale serve status --json 2>/dev/null | tr -d ' \n' | grep -o "\"[^\"]*:[0-9]*\":{\"Handlers\":{\"/\":{\"Proxy\":\"http://127.0.0.1:$1\"" | head -1 | sed 's/^"[^:]*:\([0-9]*\)".*/\1/' || true
 }
 read_state() { cat "$DIR/state" 2>/dev/null || true; }
-state_get() { read_state | grep "^$1=" | head -1 | cut -d= -f2-; }
+state_get() { read_state | grep "^$1=" | head -1 | cut -d= -f2- || true; }
 state_set() { touch "$DIR/state"; grep -v "^$1=" "$DIR/state" > "$DIR/state.tmp" || true; echo "$1=$2" >> "$DIR/state.tmp"; mv "$DIR/state.tmp" "$DIR/state"; }
 
-access_key() { grep -o '"accessKey": *"[^"]*"' "$DIR/data/secrets.json" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/'; }
+access_key() { grep -o '"accessKey": *"[^"]*"' "$DIR/data/secrets.json" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/' || true; }
 
 wait_healthy() {
   for _ in $(seq 1 60); do
@@ -105,7 +107,7 @@ cmd_setup() {
   wait_healthy || { dc logs --tail 40; die "StreamChat didn't start. The log is above."; }
 
   # --- nightly updates
-  cat > /etc/systemd/system/streamchat-update.service <<EOF
+  cat > $UNITS/streamchat-update.service <<EOF
 [Unit]
 Description=Update StreamChat
 After=network-online.target docker.service
@@ -114,7 +116,7 @@ Type=oneshot
 Environment=QUIET=1
 ExecStart=/usr/local/bin/streamchat update
 EOF
-  cat > /etc/systemd/system/streamchat-update.timer <<EOF
+  cat > $UNITS/streamchat-update.timer <<EOF
 [Unit]
 Description=Update StreamChat every night
 [Timer]
@@ -134,7 +136,7 @@ cmd_status() {
   local url key hook
   url=$(state_get app_url); key=$(access_key); hook=$(state_get kick_webhook)
   if curl -fsS http://127.0.0.1:8787/health >/dev/null 2>&1; then
-    local v; v=$(curl -fsS http://127.0.0.1:8787/health | grep -o '"version":"[^"]*"' | cut -d'"' -f4)
+    local v; v=$(curl -fsS http://127.0.0.1:8787/health | grep -o '"version":"[^"]*"' | cut -d'"' -f4 || true)
     printf '\n\033[1;32mStreamChat %s is running.\033[0m\n\n' "$v"
   else
     printf '\n\033[1;31mStreamChat is not running.\033[0m Try: sudo streamchat logs\n\n'
@@ -171,7 +173,7 @@ cmd_update() {
   fi
   [ -n "$tag" ] || die "Couldn't reach GitHub. Check: curl -I https://github.com"
   latest=${tag#v}
-  current=$(grep -o '"version": *"[^"]*"' "$DIR/app/server/package.json" 2>/dev/null | head -1 | sed 's/.*"\([^"]*\)"$/\1/')
+  current=$(grep -o '"version": *"[^"]*"' "$DIR/app/server/package.json" 2>/dev/null | head -1 | sed 's/.*"\([^"]*\)"$/\1/' || true)
   if [ -n "$latest" ] && [ "$latest" = "$current" ] && [ "${1:-}" != "--force" ]; then
     say "Already on the newest version ($current)."
     return 0
@@ -201,7 +203,7 @@ cmd_uninstall() {
   need_root uninstall
   dc down 2>/dev/null || true
   systemctl disable --now streamchat-update.timer 2>/dev/null || true
-  rm -f /etc/systemd/system/streamchat-update.{service,timer}
+  rm -f $UNITS/streamchat-update.{service,timer}
   local p
   p=$(ts_port_for 8787); [ -n "$p" ] && tailscale serve --https=$p off >/dev/null 2>&1 || true
   p=$(ts_port_for 8788); [ -n "$p" ] && tailscale funnel --https=$p off >/dev/null 2>&1 || true
