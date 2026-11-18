@@ -40,11 +40,19 @@ fi
 
 say "Downloading the latest StreamChat"
 mkdir -p "$DIR"
-api="https://api.github.com/repos/$REPO/releases/latest"
-url=$(curl -fsSL -H 'User-Agent: streamchat-install' "$api" | grep -o '"browser_download_url": *"[^"]*streamchat-server-[^"]*\.tar\.gz"' | head -1 | sed 's/.*"\(https[^"]*\)"/\1/')
-[ -n "$url" ] || die "Couldn't find a StreamChat server download on GitHub."
+# Timeouts + retries so a stuck connection fails with a message instead of hanging; -4 as a fallback
+# for servers whose IPv6 route to GitHub is broken.
+fetch() { curl -fsSL --connect-timeout 15 --max-time 120 --retry 2 -H 'User-Agent: streamchat-install' "$@" \
+  || curl -4 -fsSL --connect-timeout 15 --max-time 120 --retry 2 -H 'User-Agent: streamchat-install' "$@"; }
+tag=$(fetch "https://api.github.com/repos/$REPO/releases/latest" 2>/dev/null | grep -o '"tag_name": *"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)"$/\1/' || true)
+if [ -z "$tag" ]; then # API unreachable or rate-limited: read the tag from the releases page redirect
+  tag=$(fetch -o /dev/null -w '%{url_effective}' "https://github.com/$REPO/releases/latest" 2>/dev/null | sed -n 's#.*/tag/\(v[^/]*\)$#\1#p' || true)
+fi
+[ -n "$tag" ] || die "Couldn't reach GitHub from this server. Check: curl -I https://github.com"
+url="https://github.com/$REPO/releases/download/$tag/streamchat-server-${tag#v}.tar.gz"
+say "Getting StreamChat ${tag#v}"
 tmp=$(mktemp -d)
-curl -fsSL "$url" -o "$tmp/server.tar.gz"
+fetch "$url" -o "$tmp/server.tar.gz" || die "The download failed: $url"
 rm -rf "$DIR/app.new" && mkdir -p "$DIR/app.new"
 tar -xzf "$tmp/server.tar.gz" -C "$DIR/app.new"
 rm -rf "$tmp"
