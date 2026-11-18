@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>StreamChat</title>
+<style>
+  :root { --bg:#0b0c10; --panel:#14161d; --line:#242836; --line2:#2f3445; --text:#e8eaf0; --text2:#a3a9b8; --text3:#6b7285; --accent:#8b5cf6; --danger:#ef4444; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { background: radial-gradient(120% 70% at 50% -10%, #1d1733 0%, var(--bg) 60%); color: var(--text); font: 14px/1.5 "Segoe UI Variable", "Segoe UI", system-ui, sans-serif; display: grid; place-items: center; padding: 20px; }
+  main { width: min(440px, 100%); text-align: center; }
+  .logo { width: 72px; height: 72px; margin: 0 auto 18px; border-radius: 20px; background: url(logo.svg) center/cover; box-shadow: 0 0 60px rgba(139,92,246,.45); animation: float 3s ease-in-out infinite; }
+  @keyframes float { 50% { translate: 0 -4px; } }
+  h1 { font-size: 22px; margin: 0 0 6px; letter-spacing: -.01em; }
+  p { color: var(--text2); margin: 0; }
+  .spin { width: 22px; height: 22px; margin: 22px auto 0; border-radius: 50%; border: 2.5px solid rgba(255,255,255,.15); border-top-color: var(--accent); animation: spin .8s linear infinite; }
+  @keyframes spin { to { rotate: 360deg; } }
+  .err { margin-top: 18px; text-align: left; padding: 12px 14px; border-radius: 12px; background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.4); color: #fecaca; white-space: pre-wrap; font-size: 13px; }
+  .row { display: flex; gap: 8px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+  button { font: inherit; font-weight: 600; height: 38px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--line2); background: var(--panel); color: var(--text); cursor: pointer; transition: background .15s, transform .1s; }
+  button:hover { background: #1f2330; }
+  button:active { transform: scale(.97); }
+  button.primary { background: var(--accent); border-color: transparent; color: #fff; }
+  button.primary:hover { background: #7c4df0; }
+  .choices { display: grid; gap: 10px; margin-top: 22px; text-align: left; }
+  .choice { display: flex; gap: 12px; padding: 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; transition: border-color .15s, background .15s; }
+  .choice:hover { border-color: var(--line2); }
+  .choice:has(input:checked) { border-color: var(--accent); background: rgba(139,92,246,.08); }
+  .choice input { accent-color: var(--accent); margin-top: 3px; }
+  .choice b { display: block; }
+  .choice small { color: var(--text3); }
+  .remote { display: grid; gap: 10px; margin-top: 12px; text-align: left; }
+  .remote[hidden] { display: none; }
+  label span { display: block; font-size: 12.5px; font-weight: 600; color: var(--text2); margin-bottom: 5px; }
+  input[type=text], input[type=password] { width: 100%; height: 38px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line2); background: var(--bg); color: var(--text); font: inherit; outline: none; }
+  input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(139,92,246,.18); }
+  .hint { font-size: 12px; color: var(--text3); margin-top: 4px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <div class="logo" aria-hidden="true"></div>
+
+  <section id="loading">
+    <h1>StreamChat</h1>
+    <p id="loadingText">Starting…</p>
+    <div class="spin" aria-hidden="true"></div>
+  </section>
+
+  <section id="failed" hidden>
+    <h1>Couldn't open chat</h1>
+    <div class="err" id="errText"></div>
+    <div class="row">
+      <button class="primary" id="retry">Try again</button>
+      <button id="toSetup">Change connection</button>
+    </div>
+  </section>
+
+  <section id="updating" hidden>
+    <h1 id="updTitle">Checking for updates…</h1>
+    <p id="updText">One moment.</p>
+    <div class="spin" id="updSpin" aria-hidden="true"></div>
+    <div class="err" id="updErr" hidden></div>
+    <div class="row" id="updRow" hidden><button class="primary" id="updBack">Back to chat</button></div>
+  </section>
+
+  <section id="setup" hidden>
+    <h1>Where should StreamChat run?</h1>
+    <p>You can change this later from the tray icon.</p>
+    <div class="choices">
+      <label class="choice"><input type="radio" name="mode" value="local" checked>
+        <div><b>On this PC</b><small>Chat and the OBS overlay run here while StreamChat is open (it keeps running in the tray).</small></div></label>
+      <label class="choice"><input type="radio" name="mode" value="remote">
+        <div><b>On my server</b><small>Connect to StreamChat running on your server, e.g. over Tailscale. Keeps working when this PC is off.</small></div></label>
+    </div>
+    <div class="remote" id="remote" hidden>
+      <label><span>Server address</span><input type="text" id="url" placeholder="https://streamchat.your-tailnet.ts.net" spellcheck="false"></label>
+      <label><span>Access key</span><input type="password" id="key" placeholder="From the server's log or data/secrets.json" spellcheck="false"></label>
+      <div class="hint">On the server, run <code>docker compose logs streamchat | grep key=</code> to see it.</div>
+    </div>
+    <div class="row"><button class="primary" id="save">Connect</button></div>
+    <div class="err" id="setupErr" hidden></div>
+  </section>
+</main>
+<script>
+  const { invoke } = window.__TAURI__.core;
+  const $ = id => document.getElementById(id);
+  const show = id => { for (const s of ['loading', 'failed', 'setup', 'updating']) $(s).hidden = s !== id; };
+
+  async function update() {
+    show('updating');
+    const info = await invoke('update_info').catch(() => null);
+    $('updBack').onclick = go;
+    if (!info) {
+      $('updTitle').textContent = 'Checking for updates…';
+    } else {
+      $('updTitle').textContent = `Updating to StreamChat ${info.version}`;
+      $('updText').textContent = 'Downloading… StreamChat restarts by itself when it is done (about a minute).';
+    }
+    try {
+      await invoke('install_update');
+      $('updText').textContent = 'Installing… StreamChat will reopen in a moment.';
+    } catch (e) {
+      $('updSpin').hidden = true;
+      $('updTitle').textContent = info ? 'The update didn't install' : 'You're up to date';
+      $('updText').textContent = '';
+      $('updErr').textContent = String(e);
+      $('updErr').hidden = !info;
+      if (!info) $('updText').textContent = String(e);
+      $('updRow').hidden = false;
+    }
+  }
+
+  async function go() {
+    show('loading');
+    const cfg = await invoke('get_config');
+    $('loadingText').textContent = cfg.mode === 'remote' ? `Connecting to ${cfg.remote_url}…` : 'Starting the chat server…';
+    try {
+      const url = await invoke('start');
+      location.replace(url);
+    } catch (e) {
+      $('errText').textContent = String(e);
+      show('failed');
+    }
+  }
+
+  async function setup() {
+    const cfg = await invoke('get_config');
+    document.querySelector(`input[name=mode][value=${cfg.mode}]`).checked = true;
+    $('url').value = cfg.remote_url || '';
+    $('key').value = cfg.remote_key || '';
+    $('remote').hidden = cfg.mode !== 'remote';
+    show('setup');
+  }
+
+  for (const r of document.querySelectorAll('input[name=mode]')) r.addEventListener('change', () => { $('remote').hidden = r.value !== 'remote' || !r.checked; if (r.checked && r.value === 'remote') $('url').focus(); });
+  $('save').addEventListener('click', async () => {
+    const mode = document.querySelector('input[name=mode]:checked').value;
+    try {
+      await invoke('save_connection', { mode, remoteUrl: $('url').value, remoteKey: $('key').value });
+      $('setupErr').hidden = true;
+      go();
+    } catch (e) { $('setupErr').textContent = String(e); $('setupErr').hidden = false; }
+  });
+  $('retry').addEventListener('click', go);
+  $('toSetup').addEventListener('click', setup);
+
+  const q = new URLSearchParams(location.search);
+  if (q.get('setup') === '1') setup(); else if (q.get('update') === '1') update(); else go();
+</script>
+</body>
+</html>

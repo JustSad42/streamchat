@@ -1,0 +1,11 @@
+# StreamChat on a server. The ports are bound to 127.0.0.1 only: reach them through Tailscale
+# (see SETUP.md), never straight from the internet.
+services:
+  streamchat:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8787:8787"   # chat app + OBS overlays  -> tailscale serve (private)
+      - "127.0.0.1:8788:8788"   # Kick webhooks only       -> tailscale funnel (public)
+    volumes:
+      - ./data:/data

@@ -1,0 +1,126 @@
+/* OBS chat overlay. Theme values arrive as CSS variables from the server. */
+:root {
+  --font: Inter, "Segoe UI", system-ui, sans-serif;
+  --size: 22px;
+  --weight: 600;
+  --text: #fff;
+  --bg: rgba(11, 13, 18, .55);
+  --radius: 12px;
+  --pad: 10px;
+  --gap: 8px;
+  --emote: 1.6em;
+  --shadow: 0 1px 2px rgba(0,0,0,.9), 0 0 6px rgba(0,0,0,.5);
+}
+html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
+body { font-family: var(--font); font-size: var(--size); font-weight: var(--weight); color: var(--text); }
+
+.chat {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column; gap: var(--gap);
+  justify-content: flex-end;
+  padding: 12px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.chat.dir-down { justify-content: flex-start; }
+.chat { transition: opacity .35s ease; }
+.chat.is-hidden { opacity: 0; }
+
+/* Background styles: a bubble per message (default), no background at all, or one panel behind the chat */
+.bg-none .msg, .bg-none .event { background: transparent; padding-left: 0; padding-right: 0; }
+.bg-none .event { box-shadow: none; padding-left: .2em; }
+.bg-panel { background: var(--bg); border-radius: var(--radius); padding: var(--pad); }
+.bg-panel .msg, .bg-panel .event { background: transparent; padding: calc(var(--pad) * .25) 0; }
+.bg-panel .event { padding-left: .5em; }
+
+.msg, .event {
+  flex: none;
+  background: var(--bg);
+  border-radius: var(--radius);
+  padding: calc(var(--pad) * .7) var(--pad);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  transform-origin: left bottom;
+}
+.shadow .msg, .shadow .event { text-shadow: var(--shadow); }
+.outline .msg, .outline .event { -webkit-text-stroke: .04em rgba(0,0,0,.85); paint-order: stroke fill; }
+
+.meta { display: inline-flex; align-items: center; gap: .3em; margin-right: .35em; vertical-align: -.18em; }
+.ts { opacity: .6; font-size: .78em; font-weight: 500; }
+.pf { display: inline-grid; place-items: center; width: 1.05em; height: 1.05em; border-radius: .28em; font-size: 1em; }
+.pf svg { width: .8em; height: .8em; }
+.pf-twitch { color: #fff; background: #9146ff; }
+.pf-kick { color: #0b0d12; background: #53fc18; }
+.pf-tiktok { color: #fff; background: linear-gradient(135deg, #25f4ee 0%, #000 45%, #000 55%, #fe2c55 100%); }
+.badges { display: inline-flex; gap: .2em; }
+.badge { width: 1.05em; height: 1.05em; display: inline-block; border-radius: .2em; }
+.badge svg { width: 100%; height: 100%; display: block; }
+.name { font-weight: 800; }
+.no-bold .name { font-weight: inherit; }
+.colon { margin-left: -.05em; }
+.action .body { font-style: italic; }
+.mention { font-weight: 800; }
+.link { color: #93c5fd; text-decoration: none; }
+.reply-ctx { font-size: .7em; opacity: .7; margin-bottom: .15em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; gap: .3em; align-items: center; }
+.reply-ctx .ico svg { width: 1em; height: 1em; }
+
+.emote { display: inline-grid; vertical-align: middle; margin: -.25em .05em; }
+.emote > img { grid-area: 1 / 1; height: var(--emote); width: auto; justify-self: center; align-self: center; }
+.emote > img.zw { pointer-events: none; }
+
+.msg.hl { box-shadow: inset 3px 0 0 var(--hl); }
+
+/* Events in the chat overlay */
+.event { display: flex; align-items: center; gap: .55em; background: color-mix(in srgb, var(--ev) 22%, var(--bg)); box-shadow: inset 3px 0 0 var(--ev); }
+.ev-ico { color: var(--ev); display: grid; place-items: center; flex: none; }
+.ev-ico svg { width: 1.15em; height: 1.15em; }
+.ev-main { min-width: 0; flex: 1; }
+.ev-title { display: flex; align-items: center; gap: .4em; font-weight: 800; }
+.ev-title .ts { margin-left: auto; }
+.event .body { display: block; font-size: .9em; opacity: .9; margin-top: .1em; }
+.ev-img { height: 1.8em; width: auto; flex: none; }
+
+/* Entry animations (keyframes work in OBS's browser) */
+.anim-slide .msg.new, .anim-slide .event.new { animation: slideIn .38s cubic-bezier(.2,.9,.25,1.15) both; }
+.anim-fade .msg.new, .anim-fade .event.new { animation: fadeIn .4s ease-out both; }
+.anim-pop .msg.new, .anim-pop .event.new { animation: popIn .32s cubic-bezier(.2,1.4,.4,1) both; }
+@keyframes slideIn { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes popIn { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: none; } }
+.msg.leaving, .event.leaving { animation: leave .45s ease-in forwards; }
+@keyframes leave { to { opacity: 0; transform: translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) {
+  .msg.new, .event.new { animation-name: fadeIn !important; }
+}
+
+.notice { position: fixed; left: 12px; bottom: 12px; padding: 8px 12px; border-radius: 10px; background: rgba(239,68,68,.9); color: #fff; font: 600 14px system-ui; }
+
+/* Alerts overlay */
+.alerts { position: fixed; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.alert {
+  --ev: #8b5cf6;
+  display: flex; align-items: center; gap: 22px;
+  min-width: 420px; max-width: 80vw;
+  padding: 22px 30px 22px 22px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--ev) 32%, #0b0d12) 0%, #0b0d12 70%);
+  border: 2px solid color-mix(in srgb, var(--ev) 70%, transparent);
+  box-shadow: 0 20px 60px rgba(0,0,0,.55), 0 0 40px color-mix(in srgb, var(--ev) 40%, transparent);
+  color: #fff;
+  font-family: var(--font);
+  animation: alertIn .6s cubic-bezier(.2,1.3,.35,1) both;
+}
+.alert.out { animation: alertOut .45s ease-in forwards; }
+.alert-art { width: 96px; height: 96px; flex: none; display: grid; place-items: center; border-radius: 20px; background: color-mix(in srgb, var(--ev) 25%, transparent); color: var(--ev); }
+.alert-art svg { width: 56px; height: 56px; }
+.alert-art img { width: 84px; height: 84px; object-fit: contain; }
+.alert-kicker { display: flex; align-items: center; gap: 8px; font: 700 15px/1 var(--font); letter-spacing: .08em; text-transform: uppercase; color: color-mix(in srgb, var(--ev) 80%, #fff); }
+.alert-kicker .pf { font-size: 18px; }
+.alert-title { font: 800 34px/1.15 var(--font); margin-top: 8px; }
+.alert-msg { font: 600 22px/1.35 var(--font); margin-top: 8px; opacity: .92; }
+.alert-msg .emote > img { height: 1.6em; }
+.alert-amount { margin-left: auto; font: 900 44px/1 var(--font); color: var(--ev); padding-left: 16px; }
+@keyframes alertIn { 0% { opacity: 0; transform: translateY(40px) scale(.9); } 100% { opacity: 1; transform: none; } }
+@keyframes alertOut { to { opacity: 0; transform: translateY(-30px) scale(.96); } }
+.alert .shine { position: absolute; }

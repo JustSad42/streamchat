@@ -1,0 +1,7 @@
+{
+  "main": "dist/server.cjs",
+  "output": "dist/streamchat-server.exe",
+  "disableExperimentalSEAWarning": true,
+  "useCodeCache": false,
+  "useSnapshot": false
+}

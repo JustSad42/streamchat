@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>StreamChat</title>
+<link rel="icon" href="/app/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="/app/app.css">
+</head>
+<body>
+<div class="app" id="app">
+  <div class="banners" id="banners"></div>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true"></span>
+      <span class="brand-name">StreamChat</span>
+    </div>
+    <div class="popout-title" id="popoutTitle" hidden></div>
+    <div class="status-pills" id="statusPills" role="list" aria-label="Connections"></div>
+    <div class="top-actions">
+      <button class="icon-btn" id="searchBtn" title="Search chat history (Ctrl+F)" data-icon="search"></button>
+      <button class="icon-btn" id="hideOverlayBtn" title="Hide chat on stream (Ctrl+Shift+H)" aria-pressed="false" data-icon="eye"></button>
+      <button class="icon-btn" id="viewBtn" title="View: text size, layout, stats" data-icon="type"></button>
+      <button class="icon-btn hide-popout" id="sideToggle" title="Show events panel (Ctrl+E)" aria-pressed="false" data-icon="bell"></button>
+      <button class="icon-btn hide-popout" id="overlayBtn" title="Overlay studio" data-icon="layers"></button>
+      <button class="icon-btn hide-popout" id="settingsBtn" title="Settings (Ctrl+,)" data-icon="settings"></button>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Chat views"></nav>
+  <div class="stats" id="stats" hidden></div>
+
+  <main class="panes">
+    <section class="pane main-pane">
+      <div class="columns" id="columns"></div>
+    </section>
+    <aside class="pane side-pane" id="sidePane" hidden>
+      <div class="side-head"><span data-icon="bell" class="ico"></span> Events <span class="side-sub" id="sideSub"></span></div>
+      <div class="feed side-feed" id="sideFeed" role="log" aria-label="Events"></div>
+    </aside>
+  </main>
+
+  <footer class="composer" id="composer">
+    <div class="reply-chip" id="replyChip" hidden></div>
+    <div class="compose-row">
+      <div class="target" id="target" role="radiogroup" aria-label="Send to"></div>
+      <div class="input-wrap">
+        <input id="input" type="text" autocomplete="off" spellcheck="true" placeholder="Send a message" maxlength="500" aria-label="Message">
+        <button class="icon-btn ghost" id="emoteBtn" title="Emotes" data-icon="smile"></button>
+      </div>
+      <button class="send-btn" id="sendBtn" title="Send (Enter)" data-icon="send"></button>
+    </div>
+    <div class="suggest" id="suggest" role="listbox" hidden></div>
+  </footer>
+</div>
+
+<div id="statusPop" class="pop" popover="auto"></div>
+<div id="viewPop" class="pop view-pop" popover="auto"></div>
+<div id="emotePop" class="pop emote-pop" popover="auto">
+  <div class="emote-search"><span data-icon="search" class="ico"></span><input id="emoteSearch" type="search" placeholder="Search emotes" aria-label="Search emotes"></div>
+  <div class="emote-grid" id="emoteGrid"></div>
+</div>
+<div id="msgMenu" class="pop menu" popover="auto"></div>
+
+<dialog id="userCard" class="dialog user-card" closedby="any" aria-labelledby="ucName"></dialog>
+<dialog id="settings" class="dialog settings" closedby="any" aria-label="Settings"></dialog>
+<dialog id="searchDlg" class="dialog search-dlg" closedby="any" aria-label="Search chat history"></dialog>
+<dialog id="keysDlg" class="dialog keys-dlg" closedby="any" aria-labelledby="keysTitle"></dialog>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script type="module" src="/app/app.js"></script>
+</body>
+</html>

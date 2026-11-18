@@ -1,0 +1,8 @@
+**/node_modules
+server/dist
+desktop
+installer
+dist
+data
+**/graphify-out
+.git
