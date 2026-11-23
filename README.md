@@ -3,6 +3,8 @@
 Twitch, Kick and TikTok chat in one window, plus a styled OBS chat overlay and alerts.
 Runs on your Windows PC (desktop app) or on a Linux server (Docker) reached over Tailscale.
 
+![StreamChat: Twitch, Kick and TikTok chat merged in one feed, with live status, stats bar and events](docs/screenshots/chat.png)
+
 - **Merged chat** with per-platform tabs, Mentions and Events tabs, and an events side panel
 - **Emotes:** Twitch, Kick, TikTok sub emotes, plus **7TV** (Twitch + Kick, including animated and zero-width), **FrankerFaceZ** and **BetterTTV**. 7TV changes show up live.
 - **Send** to Twitch, Kick or both at once, with replies, emote/user Tab-completion and an emote picker
@@ -22,6 +24,15 @@ Download the installer from [Releases](https://github.com/JustSad42/streamchat/r
 ```bash
 curl -fsSL https://raw.githubusercontent.com/JustSad42/streamchat/main/install.sh | sudo bash
 ```
+
+## How it works
+
+| | |
+|---|---|
+| ![Twitch, Kick and TikTok side by side in columns](docs/screenshots/columns.png) | ![The Overlay studio with OBS URLs and a live preview](docs/screenshots/overlay-studio.png) |
+| **1. Connect your channels** in Settings → Accounts. Chat arrives merged, or split into columns (one per platform) that you can pop out. | **2. Style the OBS overlay.** Copy the chat or alerts URL into an OBS Browser source; font, background and animation changes show up live in the preview and on stream. |
+
+The demo chat in these screenshots is made up.
 
 ## Layout
 
