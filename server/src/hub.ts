@@ -23,10 +23,10 @@ class Hub extends EventEmitter {
   private byUser = new Map<string, ChatMessage[]>();
   private byId = new Map<string, Item>();
   status: Record<Platform, PlatformStatus> = {
-    twitch: { state: 'off' }, kick: { state: 'off' }, tiktok: { state: 'off' },
+    twitch: { state: 'off' }, kick: { state: 'off' }, tiktok: { state: 'off' }, youtube: { state: 'off' },
   };
   // Names you're logged in as / streaming as, per platform, for mention detection.
-  selfNames: Record<Platform, string[]> = { twitch: [], kick: [], tiktok: [] };
+  selfNames: Record<Platform, string[]> = { twitch: [], kick: [], tiktok: [], youtube: [] };
   private highlightCache: { src: string; rules: { test: (s: string) => boolean; color: string }[] } = { src: '', rules: [] };
   private filterCache: { src: string; test: (s: string) => boolean } = { src: '', test: () => false };
 
@@ -154,7 +154,7 @@ class Hub extends EventEmitter {
   private decorate(m: ChatMessage) {
     const names = this.selfNames[m.platform];
     if (names.includes(m.user.login)) m.flags.self = true;
-    // First-time chatters: Twitch tells us; for Kick and TikTok, it's whoever StreamChat hasn't seen before.
+    // First-time chatters: Twitch tells us; for the others, it's whoever StreamChat hasn't seen before.
     const firstSeen = !m.flags.self && viewers.seen(m);
     if (m.platform !== 'twitch' && firstSeen && viewers.warmedUp(m.platform, m.ts)) m.flags.firstMsg = true;
     if (!settings.firstChatter || m.flags.self) delete m.flags.firstMsg;

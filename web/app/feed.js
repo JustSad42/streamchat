@@ -6,7 +6,7 @@ import { chatEl, eventEl, el, iconEl } from '/shared/render.js';
 import { PLATFORM } from '/shared/icons.js';
 import { state, prefs, emit } from './core.js';
 
-const PLATFORMS = ['twitch', 'kick', 'tiktok'];
+const PLATFORMS = ['twitch', 'kick', 'tiktok', 'youtube'];
 const MAX_NODES = 600;
 
 export const VIEWS = [
@@ -14,6 +14,7 @@ export const VIEWS = [
   { id: 'twitch', label: 'Twitch', pf: 'twitch' },
   { id: 'kick', label: 'Kick', pf: 'kick' },
   { id: 'tiktok', label: 'TikTok', pf: 'tiktok' },
+  { id: 'youtube', label: 'YouTube', pf: 'youtube' },
   { id: 'mentions', label: 'Mentions', icon: 'at' },
   { id: 'firsts', label: 'First-timers', icon: 'sprout' },
   { id: 'events', label: 'Events', icon: 'zap' },
@@ -198,7 +199,7 @@ export class Column {
     const v = this.view;
     if (!anyConfigured) {
       icon = 'settings'; title = 'Connect your channels';
-      text = 'Add your Twitch, Kick and TikTok channels to start reading chat.';
+      text = 'Add your Twitch, Kick, TikTok and YouTube channels to start reading chat.';
       action = { label: 'Open settings', run: () => emit('openSettings', 'accounts') };
     } else if (v === 'mentions') { icon = 'at'; title = 'No mentions yet'; text = 'Messages that mention you will collect here.'; }
     else if (v === 'firsts') { icon = 'sprout'; title = 'No first-timers yet'; text = 'People chatting in your channel for the first time show up here, so you can welcome them.'; }

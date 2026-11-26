@@ -1,6 +1,6 @@
 # StreamChat
 
-Twitch, Kick and TikTok chat in one window, plus a styled OBS chat overlay and alerts.
+Twitch, Kick, TikTok and YouTube chat in one window, plus a styled OBS chat overlay and alerts.
 Runs on your Windows PC (desktop app) or on a Linux server (Docker) reached over Tailscale.
 
 ![StreamChat: Twitch, Kick and TikTok chat merged in one feed, with live status, stats bar and events](docs/screenshots/chat.png)
@@ -10,7 +10,7 @@ Runs on your Windows PC (desktop app) or on a Linux server (Docker) reached over
 - **Send** to Twitch, Kick or both at once, with replies, emote/user Tab-completion and an emote picker
 - **Moderate:** delete, timeout and ban from hover buttons, right-click or the user card (Twitch, Kick)
 - **Highlights:** mentions of your name, plus your own words or regexes in any color
-- **Events:** follows, subs, gifted subs, raids, bits, channel points, Kicks, TikTok gifts/likes/shares
+- **Events:** follows, subs, gifted subs, raids, bits, channel points, Kicks, TikTok gifts/likes/shares, YouTube Super Chats and memberships
 - **OBS overlay** with a live-preview style editor (bubble, no background or one panel), and an **alerts overlay**
 - **Saved chat + search** (Ctrl+F), **first-time chatters**, **nicknames, notes and linked accounts** per viewer
 - **Slash commands** (/ban, /timeout, /slow, /shoutout, /raid…), **ban everywhere**, **blocked words**
@@ -60,3 +60,4 @@ installer and helper command.
 - **Twitch:** IRC over WebSocket for chat (works signed out), Helix for moderation/badges/user cards, EventSub WebSocket for follows and redemptions. Sign-in uses the device-code flow, so only a public Client ID is needed.
 - **Kick:** the official public API. Chat and events arrive as signed webhooks; sending and moderation use the REST API with your sign-in (OAuth + PKCE).
 - **TikTok:** [tiktok-live-connector](https://github.com/zerodytrash/TikTok-Live-Connector) (unofficial, signing via Euler Stream). Read-only.
+- **YouTube:** the public web chat endpoints (unofficial, no API key). Read-only.

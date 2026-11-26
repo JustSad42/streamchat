@@ -1,8 +1,8 @@
 // Shared message model. Every connector turns its platform's data into these shapes,
 // so the desktop app and the OBS overlay only ever deal with one format.
 
-export type Platform = 'twitch' | 'kick' | 'tiktok';
-export const PLATFORMS: Platform[] = ['twitch', 'kick', 'tiktok'];
+export type Platform = 'twitch' | 'kick' | 'tiktok' | 'youtube';
+export const PLATFORMS: Platform[] = ['twitch', 'kick', 'tiktok', 'youtube'];
 
 export interface Badge {
   id: string;          // e.g. "moderator", "subscriber/12"
@@ -10,7 +10,7 @@ export interface Badge {
   url?: string;        // image; when missing the UI draws a built-in icon for `id`
 }
 
-export type EmoteSource = 'twitch' | 'kick' | 'tiktok' | '7tv' | 'ffz' | 'bttv';
+export type EmoteSource = 'twitch' | 'kick' | 'tiktok' | 'youtube' | '7tv' | 'ffz' | 'bttv';
 
 export type Part =
   | { t: 'text'; v: string }

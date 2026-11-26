@@ -41,7 +41,7 @@ function build() {
   f.user = el('input', 'inp');
   f.user.placeholder = 'From (name or nickname)';
   f.user.setAttribute('aria-label', 'From');
-  f.platform = sel([['', 'All platforms'], ['twitch', 'Twitch'], ['kick', 'Kick'], ['tiktok', 'TikTok']], 'Platform');
+  f.platform = sel([['', 'All platforms'], ['twitch', 'Twitch'], ['kick', 'Kick'], ['tiktok', 'TikTok'], ['youtube', 'YouTube']], 'Platform');
   f.days = sel([['1', 'Today'], ['7', 'Last 7 days'], ['30', 'Last 30 days'], ['0', 'Everything']], 'Time range');
   f.days.value = '7';
   f.kind = sel([['chat', 'Messages'], ['events', 'Events'], ['all', 'Both']], 'Show');

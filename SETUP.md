@@ -1,6 +1,6 @@
 # StreamChat setup guide
 
-StreamChat puts your Twitch, Kick and TikTok chat in one window and on your stream as an OBS overlay.
+StreamChat puts your Twitch, Kick, TikTok and YouTube chat in one window and on your stream as an OBS overlay.
 It can run **on your Windows PC** (the desktop app) or **on your Hetzner server** (Docker), reached privately over Tailscale.
 
 Platform websites change their menus often, so a button might have a slightly different name than written here.
@@ -31,6 +31,16 @@ Type your TikTok username in **Settings → Accounts → TikTok**. Chat connects
   can break for a while when TikTok changes things.
 - A free API key from <https://www.eulerstream.com> raises the connection limits. Paste it into the TikTok card.
 - TikTok is read-only: other apps can't send messages or moderate there.
+
+## YouTube (1 minute)
+
+Type your channel's **@handle** (or paste the channel link) in **Settings → Accounts → YouTube**. No sign-in or API key.
+Chat connects by itself within about a minute of you going LIVE.
+
+- Only **public** streams are found; unlisted and private ones aren't.
+- YouTube is read-only here: send and moderate on YouTube. Super Chats, Super Stickers, new members and gifted
+  memberships show up as events.
+- It reads the same public chat pages your browser does, which can break for a while when YouTube changes them.
 
 ## 4. Kick (5–10 minutes)
 
@@ -123,5 +133,6 @@ webhook port.
   Webhooks, paste the Webhook URL from StreamChat, and save. StreamChat retries every 20 seconds.
 - **TikTok says "Waiting for your stream":** that's normal while you're not live. It connects by itself within about
   20 seconds of you going LIVE.
+- **YouTube says "Not live right now" while you are:** check the stream is public and the handle is yours.
 - **Port 8787 is in use:** another StreamChat (or something else) is running. Quit it from the tray, or change `port`
   in `%APPDATA%\com.streamchat.app\desktop.json`.

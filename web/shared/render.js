@@ -69,7 +69,7 @@ function emoteEl(p, opts) {
   return wrap;
 }
 
-const SRC_NAME = { twitch: 'Twitch', kick: 'Kick', tiktok: 'TikTok', '7tv': '7TV', ffz: 'FrankerFaceZ', bttv: 'BetterTTV' };
+const SRC_NAME = { twitch: 'Twitch', kick: 'Kick', tiktok: 'TikTok', youtube: 'YouTube', '7tv': '7TV', ffz: 'FrankerFaceZ', bttv: 'BetterTTV' };
 
 export function partsEl(parts, opts = {}) {
   const span = el('span', 'body');

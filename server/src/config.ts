@@ -49,7 +49,7 @@ export interface OverlayTheme {
   showEvents: boolean;
   hideCommands: boolean;     // messages starting with "!"
   hideUsers: string[];       // bots etc. (logins, any platform)
-  platforms: Record<'twitch' | 'kick' | 'tiktok', boolean>;
+  platforms: Record<'twitch' | 'kick' | 'tiktok' | 'youtube', boolean>;
   customCss: string;
 }
 
@@ -68,6 +68,7 @@ export interface Settings {
   twitch: { channel: string; enabled: boolean };
   kick: { channel: string; enabled: boolean; webhookUrl: string };
   tiktok: { username: string; enabled: boolean };
+  youtube: { channel: string; enabled: boolean };
   emotes: { sevenTv: boolean; ffz: boolean; bttv: boolean };
   highlights: HighlightRule[];
   highlightMentions: boolean;
@@ -121,7 +122,7 @@ export const DEFAULT_THEME: OverlayTheme = {
   showEvents: true,
   hideCommands: true,
   hideUsers: ['nightbot', 'streamelements', 'streamlabs', 'moobot', 'fossabot', 'botrixoficial', 'kickbot'],
-  platforms: { twitch: true, kick: true, tiktok: true },
+  platforms: { twitch: true, kick: true, tiktok: true, youtube: true },
   customCss: '',
 };
 
@@ -140,6 +141,7 @@ const DEFAULT_SETTINGS: Settings = {
   twitch: { channel: '', enabled: true },
   kick: { channel: '', enabled: true, webhookUrl: '' },
   tiktok: { username: '', enabled: true },
+  youtube: { channel: '', enabled: true },
   emotes: { sevenTv: true, ffz: true, bttv: true },
   highlights: [],
   highlightMentions: true,

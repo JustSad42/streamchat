@@ -12,7 +12,7 @@ export const on = (type, fn) => bus.addEventListener(type, e => fn(e.detail));
 
 export const state = {
   pub: null,          // /api/state result: settings, status, keys, accounts, overlayKey
-  status: { twitch: { state: 'off' }, kick: { state: 'off' }, tiktok: { state: 'off' } },
+  status: { twitch: { state: 'off' }, kick: { state: 'off' }, tiktok: { state: 'off' }, youtube: { state: 'off' } },
   items: [],          // recent chat + events, oldest first
   users: new Map(),   // login -> { name, color, platform } for autocomplete
   overlayHidden: false,
@@ -76,7 +76,7 @@ const defaults = {
   msgStyle: 'plain',            // plain | bubbles | striped
   nicks: true,                  // show your nicknames for people
   layout: 'single',             // single | columns
-  columns: ['twitch', 'kick', 'tiktok'],
+  columns: ['twitch', 'kick', 'tiktok', 'youtube'],
   statsBar: true,
   stats: { viewers: true, total: true, uptime: true, rate: true, chatters: false, firsts: true },
   dismissed: {},                // banners you closed

@@ -8,7 +8,7 @@ import { openSearch } from './search.js';
 import { renderTarget, startReply, insertText, rememberUser, lockTarget } from './composer.js';
 import { applyLook, setChatSize, renderStats, noteItem, openViewMenu, showKeys, renderBanners } from './view.js';
 
-const PLATFORMS = ['twitch', 'kick', 'tiktok'];
+const PLATFORMS = ['twitch', 'kick', 'tiktok', 'youtube'];
 const MAX_ITEMS = 3000;
 
 // A pop-out window shows one view, e.g. /app?view=kick&popout=1
@@ -363,7 +363,7 @@ document.addEventListener('keydown', e => {
   if (ctrl && !e.shiftKey && e.key.toLowerCase() === 'e' && !popout) { e.preventDefault(); toggleSide(); return; }
   if (ctrl && e.key === ',') { e.preventDefault(); openSettings(); return; }
   if (ctrl && e.key === '\\' && !popout) { e.preventDefault(); prefs.layout = split() ? 'single' : 'columns'; savePrefs(); buildColumns(); return; }
-  if (ctrl && !e.shiftKey && /^[1-7]$/.test(e.key) && !popout) { e.preventDefault(); setTab(VIEWS[Number(e.key) - 1].id); return; }
+  if (ctrl && !e.shiftKey && /^[1-8]$/.test(e.key) && !popout) { e.preventDefault(); setTab(VIEWS[Number(e.key) - 1].id); return; }
   if (document.querySelector('dialog[open]')) return;
   if (e.key === 'Escape' && !typing(e.target)) { for (const c of columns) c.goLive(); return; }
   if (typing(e.target)) return;
@@ -443,7 +443,7 @@ renderStats();
 on('state', () => { renderTarget(); renderBanners(); });
 refreshState().then(() => {
   const s = state.pub;
-  const nothingSet = !s.settings.twitch.channel && !s.accounts.twitch && !s.settings.kick.channel && !s.accounts.kick && !s.settings.tiktok.username;
+  const nothingSet = !s.settings.twitch.channel && !s.accounts.twitch && !s.settings.kick.channel && !s.accounts.kick && !s.settings.tiktok.username && !s.settings.youtube.channel;
   if (nothingSet && !popout) openSettings('accounts');
 }).catch(e => toast(e.message, 'err'));
 connect();

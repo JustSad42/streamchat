@@ -202,7 +202,7 @@ function drawLinks(box, platform, user, linked, everywhere) {
   const finder = el('div', 'link-finder');
   finder.hidden = true;
   const q = el('input', 'inp');
-  q.placeholder = `Their name on ${['twitch', 'kick', 'tiktok'].filter(p => p !== platform).map(p => PLATFORM[p].name).join(' or ')}`;
+  q.placeholder = `Their name on ${['twitch', 'kick', 'tiktok', 'youtube'].filter(p => p !== platform).map(p => PLATFORM[p].name).join(' or ')}`;
   const res = el('div', 'link-results');
   finder.append(q, res, el('small', 'help', 'Shows people who have chatted in your channel.'));
   box.append(finder);

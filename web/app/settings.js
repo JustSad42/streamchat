@@ -196,7 +196,7 @@ function statusChip(p) {
   return c;
 }
 function updateChips() {
-  for (const p of ['twitch', 'kick', 'tiktok']) {
+  for (const p of ['twitch', 'kick', 'tiktok', 'youtube']) {
     const old = body?.querySelector(`[data-chip="${p}"]`);
     if (old) old.replaceWith(statusChip(p));
     const d = body?.querySelector(`[data-detail="${p}"]`);
@@ -295,6 +295,15 @@ function accounts() {
     g.append(field('Euler Stream API key (optional)', textInput('', { type: 'password', placeholder: k.eulerKeySet ? 'Saved (type to replace, or clear)' : 'Not set, using the free tier', onCommit: async v => { state.pub = await api('POST', '/api/keys', { eulerKey: v }); toast(v ? 'Key saved' : 'Key removed', 'ok'); renderSection(); } }), 'A free key from eulerstream.com raises the connection limits.'));
     c.append(g);
     c.append(el('p', 'help', 'TikTok is read-only: other apps can\'t send messages or moderate there. Gifts, follows, shares, subs and likes show up as events.'));
+    body.append(c);
+  }
+
+  // ---- YouTube
+  {
+    const c = card('youtube', 'YouTube', [statusChip('youtube'), enabledSwitch('youtube')]);
+    c.append(detailLine('youtube'));
+    c.append(field('Channel', textInput(s.youtube.channel, { placeholder: '@yourchannel', onCommit: v => save({ youtube: { channel: v.trim() } }, 0) }), 'Your @handle, channel link or channel ID. Chat connects automatically when you go LIVE.'));
+    c.append(el('p', 'help', 'YouTube is read-only here and needs no sign-in: send and moderate on YouTube. Super Chats and memberships show up as events. Unlisted and private streams are not found.'));
     body.append(c);
   }
 }
@@ -427,9 +436,9 @@ function chat() {
     field('Message background', select(prefs.msgStyle, [['plain', 'None'], ['bubbles', 'Dark bubble per message'], ['striped', 'Striped rows']], v => { prefs.msgStyle = v; savePrefs(); })),
     switchRow('Timestamps', 'Show the time next to each message.', prefs.timestamps, v => { prefs.timestamps = v; savePrefs(); }),
     switchRow('Badges', 'Moderator, subscriber, VIP and other badges.', prefs.badges, v => { prefs.badges = v; savePrefs(); }),
-    switchRow('Platform icons', 'Small Twitch / Kick / TikTok mark on every line.', prefs.platformIcons, v => { prefs.platformIcons = v; savePrefs(); }),
+    switchRow('Platform icons', 'Small Twitch / Kick / TikTok / YouTube mark on every line.', prefs.platformIcons, v => { prefs.platformIcons = v; savePrefs(); }),
     switchRow('Nicknames', 'Show the nicknames you give people (set them in a user card).', prefs.nicks, v => { prefs.nicks = v; savePrefs(); }),
-    switchRow('First-time chatters', 'Mark people chatting in your channel for the first time, and list them in the First-timers tab. On Kick and TikTok this starts 3 days after StreamChat first sees your chat.', s.firstChatter, v => save({ firstChatter: v })),
+    switchRow('First-time chatters', 'Mark people chatting in your channel for the first time, and list them in the First-timers tab. On Kick, TikTok and YouTube this starts 3 days after StreamChat first sees your chat.', s.firstChatter, v => save({ firstChatter: v })),
   );
   body.append(look);
 
@@ -444,7 +453,7 @@ function chat() {
       l.append(c, label);
       grid.append(l);
     }
-    stats.append(grid, el('p', 'help', 'Viewer counts need you signed in on Twitch and Kick. TikTok shows them while you are live.'));
+    stats.append(grid, el('p', 'help', 'Viewer counts need you signed in on Twitch and Kick. TikTok and YouTube show them while you are live.'));
   }
   body.append(stats);
 
@@ -622,7 +631,7 @@ function overlay() {
 
   controls.append(el('div', 'group-title', 'Show'));
   const pt = el('div', 'platform-toggles');
-  for (const p of ['twitch', 'kick', 'tiktok']) {
+  for (const p of ['twitch', 'kick', 'tiktok', 'youtube']) {
     const b = el('button', 'ptoggle');
     b.type = 'button';
     b.setAttribute('aria-pressed', String(t.platforms[p]));
@@ -670,7 +679,7 @@ function alerts() {
   body.append(u);
 
   const types = card(null, 'Which events');
-  const T = [['follow', 'Follows', 'All platforms'], ['sub', 'Subscriptions', 'New subs and resubs'], ['giftsub', 'Gifted subs', 'Twitch and Kick'], ['raid', 'Raids', 'Twitch'], ['bits', 'Bits', 'Twitch'], ['gift', 'TikTok gifts', null], ['kicks', 'Kicks', 'Kick'], ['share', 'Shares', 'TikTok'], ['like', 'Likes', 'TikTok, at most once a minute per viewer']];
+  const T = [['follow', 'Follows', 'All platforms'], ['sub', 'Subscriptions', 'New subs, resubs and YouTube members'], ['giftsub', 'Gifted subs', 'Twitch, Kick and YouTube memberships'], ['raid', 'Raids', 'Twitch'], ['bits', 'Bits', 'Twitch'], ['gift', 'Gifts', 'TikTok gifts and YouTube Super Chats'], ['kicks', 'Kicks', 'Kick'], ['share', 'Shares', 'TikTok'], ['like', 'Likes', 'TikTok, at most once a minute per viewer']];
   for (const [id, label, desc] of T) types.append(switchRow(label, desc, a.types[id], v => save({ alerts: { types: { [id]: v } } })));
   body.append(types);
 

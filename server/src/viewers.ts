@@ -36,7 +36,7 @@ const key = (platform: string, id: string) => `${platform}:${id}`;
 class ViewerStore {
   private map = new Map<string, Viewer>();
   private groups = new Map<string, Set<string>>();
-  trackingSince: Record<Platform, number> = { twitch: 0, kick: 0, tiktok: 0 };
+  trackingSince: Record<Platform, number> = { twitch: 0, kick: 0, tiktok: 0, youtube: 0 };
   private timer: NodeJS.Timeout | null = null;
   private dirty = false;
 

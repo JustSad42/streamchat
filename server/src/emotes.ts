@@ -113,7 +113,7 @@ class EmoteStore extends EventEmitter {
 
   // channelId: Twitch user id, or Kick user id.
   async loadChannel(platform: Platform, channelId: string) {
-    if (platform === 'tiktok' || !channelId) return;
+    if (platform === 'tiktok' || platform === 'youtube' || !channelId) return;
     const key = `${platform}:${channelId}`;
     const sets = emptySets();
     const jobs: Promise<void>[] = [];
@@ -162,7 +162,7 @@ class EmoteStore extends EventEmitter {
     const order: (keyof Sets)[] = ['seventv', 'bttv', 'ffz'];
     if (ch) for (const k of order) { if (on[k]) { const e = ch[k].get(word); if (e) return e; } }
     // Globals: 7TV globals everywhere it's supported; FFZ/BTTV globals only on Twitch.
-    if (platform === 'tiktok') return undefined;
+    if (platform === 'tiktok' || platform === 'youtube') return undefined;
     for (const k of order) {
       if (!on[k] || (platform === 'kick' && k !== 'seventv')) continue;
       const e = this.global[k].get(word);
@@ -179,7 +179,7 @@ class EmoteStore extends EventEmitter {
     const ch = channelId ? this.channels.get(`${platform}:${channelId}`) : undefined;
     for (const k of ['seventv', 'bttv', 'ffz'] as const) if (on[k] && ch) add(ch[k]);
     for (const k of ['seventv', 'bttv', 'ffz'] as const) {
-      if (!on[k] || platform === 'tiktok' || (platform === 'kick' && k !== 'seventv')) continue;
+      if (!on[k] || platform === 'tiktok' || platform === 'youtube' || (platform === 'kick' && k !== 'seventv')) continue;
       add(this.global[k]);
     }
     return [...out.values()];

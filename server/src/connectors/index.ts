@@ -1,6 +1,7 @@
 import { TwitchConnector } from './twitch.ts';
 import { KickConnector } from './kick.ts';
 import { TikTokConnector } from './tiktok.ts';
+import { YouTubeConnector } from './youtube.ts';
 import { settings, type Settings } from '../config.ts';
 import { PLATFORMS, type ModAction, type Platform } from '../types.ts';
 import { hub, type HubEvent } from '../hub.ts';
@@ -15,6 +16,7 @@ export const connectors = {
   twitch: new TwitchConnector(),
   kick: new KickConnector(),
   tiktok: new TikTokConnector(),
+  youtube: new YouTubeConnector(),
 };
 
 export async function startAll() {

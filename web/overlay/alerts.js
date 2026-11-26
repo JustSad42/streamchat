@@ -17,7 +17,7 @@ function wanted(ev) {
   const typeKey = ev.type === 'resub' ? 'sub' : ev.type;
   if (!alerts.types[typeKey]) return false;
   if (ev.type === 'bits' && (ev.amount || 0) < alerts.minBits) return false;
-  if (ev.type === 'gift' && (ev.amount || 0) < alerts.minDiamonds) return false;
+  if (ev.type === 'gift' && ev.platform === 'tiktok' && (ev.amount || 0) < alerts.minDiamonds) return false;
   return true;
 }
 

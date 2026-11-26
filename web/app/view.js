@@ -5,7 +5,7 @@ import { el, iconEl, platformEl } from '/shared/render.js';
 import { PLATFORM } from '/shared/icons.js';
 import { $, api, state, prefs, savePrefs, toast, on, emit, placePopover, enableLightDismiss, STAT_KEYS, CHAT_SIZE } from './core.js';
 
-const PLATFORMS = ['twitch', 'kick', 'tiktok'];
+const PLATFORMS = ['twitch', 'kick', 'tiktok', 'youtube'];
 
 // ---------------------------------------------------------------- text size & message style
 
@@ -215,7 +215,7 @@ function drawViewMenu() {
 const keysDlg = $('#keysDlg');
 enableLightDismiss(keysDlg);
 export const SHORTCUTS = [
-  ['Ctrl + 1 … 7', 'Switch tab (All, Twitch, Kick, TikTok, Mentions, First-timers, Events)'],
+  ['Ctrl + 1 … 8', 'Switch tab (All, Twitch, Kick, TikTok, YouTube, Mentions, First-timers, Events)'],
   ['Ctrl + F', 'Search chat history'],
   ['Ctrl + K  or  /', 'Type a message'],
   ['Esc', 'Cancel reply · clear the box · back to live chat'],

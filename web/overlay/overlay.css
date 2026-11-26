@@ -53,6 +53,7 @@ body { font-family: var(--font); font-size: var(--size); font-weight: var(--weig
 .pf-twitch { color: #fff; background: #9146ff; }
 .pf-kick { color: #0b0d12; background: #53fc18; }
 .pf-tiktok { color: #fff; background: linear-gradient(135deg, #25f4ee 0%, #000 45%, #000 55%, #fe2c55 100%); }
+.pf-youtube { color: #fff; background: #ff0033; }
 .badges { display: inline-flex; gap: .2em; }
 .badge { width: 1.05em; height: 1.05em; display: inline-block; border-radius: .2em; }
 .badge svg { width: 100%; height: 100%; display: block; }

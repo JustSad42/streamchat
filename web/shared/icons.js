@@ -68,6 +68,7 @@ export const PLATFORM = {
   twitch: { name: 'Twitch', color: '#9146FF', icon: svg('<path fill="currentColor" d="M4.3 3 3 6.4v13.4h4.6V22h2.6l2.4-2.2h3.7L21 15V3H4.3Zm1.6 1.7h13.4v9.6l-2.9 2.8h-4.6l-2.4 2.3v-2.3H5.9V4.7Zm4.5 8.2h1.7V7.8h-1.7v5.1Zm4.6 0h1.7V7.8H15v5.1Z"/>') },
   kick: { name: 'Kick', color: '#53FC18', icon: svg('<path fill="currentColor" d="M3 3h6v4.5h2.2V5.2h2.3V3H21v6h-2.3v2.2h-2.2v1.6h2.2V15H21v6h-7.5v-2.2h-2.3v-2.3H9V21H3V3Z"/>') },
   tiktok: { name: 'TikTok', color: '#FE2C55', icon: svg('<path fill="currentColor" d="M16.6 2h-3.4v13.3a2.9 2.9 0 1 1-2.9-2.9c.3 0 .6 0 .9.1V9.1a6.4 6.4 0 1 0 5.4 6.3V8.6a8.2 8.2 0 0 0 4.4 1.3V6.5a4.8 4.8 0 0 1-4.4-4.5Z"/>') },
+  youtube: { name: 'YouTube', color: '#FF0033', icon: svg('<path fill="currentColor" d="M7 4.5v15L20 12 7 4.5Z"/>') },
 };
 
 // Built-in badge art for badges that don't come with an image.
@@ -85,6 +86,6 @@ const BADGES = {
   fan: badgeSvg('#fe2c55', '<path fill="#fff" d="M9 14S4 11 4 7.6A2.6 2.6 0 0 1 9 6.4a2.6 2.6 0 0 1 5 1.2C14 11 9 14 9 14z"/>'),
 };
 export function badgeArt(id) {
-  const key = id.replace(/^(kick|tiktok):/, '').split('/')[0];
+  const key = id.replace(/^(kick|tiktok|youtube):/, '').split('/')[0];
   return BADGES[key] || null;
 }
