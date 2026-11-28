@@ -1,6 +1,6 @@
 [package]
 name = "streamchat"
-version = "0.2.2"
+version = "0.3.0"
 edition = "2021"
 description = "Twitch, Kick and TikTok chat in one window, with an OBS overlay"
 license = "MIT"
