@@ -164,6 +164,14 @@ cmd_status() {
   echo
 }
 
+# Never unpack a download that doesn't match the checksum published beside it.
+verify() {
+  local want
+  want=$(fetch "$1.sha256" 2>/dev/null | awk '{print $1}')
+  [ "${#want}" = 64 ] || die "That release has no checksum, so it wasn't installed: $1"
+  echo "$want  $2" | sha256sum -c --status || die "The download doesn't match its checksum, so it wasn't installed."
+}
+
 cmd_update() {
   need_root update
   local url current latest tag tmp
@@ -182,6 +190,7 @@ cmd_update() {
   say "Updating StreamChat ${current:-?} → $latest"
   tmp=$(mktemp -d)
   fetch "$url" -o "$tmp/server.tar.gz" || die "The download failed: $url"
+  verify "$url" "$tmp/server.tar.gz"
   rm -rf "$DIR/app.new" && mkdir -p "$DIR/app.new"
   tar -xzf "$tmp/server.tar.gz" -C "$DIR/app.new"
   rm -rf "$tmp"

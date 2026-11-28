@@ -53,6 +53,9 @@ url="https://github.com/$REPO/releases/download/$tag/streamchat-server-${tag#v}.
 say "Getting StreamChat ${tag#v}"
 tmp=$(mktemp -d)
 fetch "$url" -o "$tmp/server.tar.gz" || die "The download failed: $url"
+want=$(fetch "$url.sha256" 2>/dev/null | awk '{print $1}')
+[ "${#want}" = 64 ] || die "That release has no checksum, so it wasn't installed: $url"
+echo "$want  $tmp/server.tar.gz" | sha256sum -c --status || die "The download doesn't match its checksum, so it wasn't installed."
 rm -rf "$DIR/app.new" && mkdir -p "$DIR/app.new"
 tar -xzf "$tmp/server.tar.gz" -C "$DIR/app.new"
 rm -rf "$tmp"

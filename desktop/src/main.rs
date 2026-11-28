@@ -5,6 +5,8 @@
 //! StreamChat server running elsewhere (e.g. on a Hetzner box over Tailscale).
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod unload;
+
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::os::windows::process::CommandExt;
@@ -359,10 +361,6 @@ fn urlencode(s: &str) -> String {
 
 // ---------------- window / tray ----------------
 
-fn launcher_url(setup: bool) -> WebviewUrl {
-    WebviewUrl::App(if setup { "index.html?setup=1".into() } else { "index.html".into() })
-}
-
 fn is_allowed(url: &Url, cfg: &Config) -> bool {
     match url.scheme() {
         "tauri" | "about" | "data" | "blob" => return true,
@@ -383,30 +381,44 @@ fn is_allowed(url: &Url, cfg: &Config) -> bool {
 }
 
 fn show_main(app: &AppHandle) {
-    if let Some(w) = app.get_webview_window("main") {
-        let _ = w.unminimize();
-        let _ = w.show();
-        let _ = w.set_focus();
-    }
+    open_main(app, None);
+}
+
+/// Shows the window, building it if it was unloaded. `page` is a bundled page to go to.
+fn open_main(app: &AppHandle, page: Option<&'static str>) {
+    unload::cancel();
+    let app = app.clone();
+    // Building a window inside an event handler deadlocks on Windows, so use a thread.
+    std::thread::spawn(move || {
+        match app.get_webview_window("main") {
+            Some(w) => {
+                // On Windows, Tauri serves the bundled pages from http://tauri.localhost.
+                if let Some(u) = page.and_then(|p| Url::parse(&format!("http://tauri.localhost/{p}")).ok()) {
+                    let _ = w.navigate(u);
+                }
+            }
+            // A new window starts at the launcher, which finds the running server and goes to the chat.
+            None => {
+                let _ = build_window(&app, WebviewUrl::App(page.unwrap_or("index.html").into()));
+            }
+        }
+        if let Some(w) = app.get_webview_window("main") {
+            let _ = w.unminimize();
+            let _ = w.show();
+            let _ = w.set_focus();
+        }
+    });
 }
 
 fn open_launcher(app: &AppHandle, setup: bool) {
-    if let Some(w) = app.get_webview_window("main") {
-        if let WebviewUrl::App(p) = launcher_url(setup) {
-            // On Windows, Tauri serves the bundled pages from http://tauri.localhost.
-            if let Ok(u) = Url::parse(&format!("http://tauri.localhost/{}", p.display())) {
-                let _ = w.navigate(u);
-            }
-        }
-    }
-    show_main(app);
+    open_main(app, Some(if setup { "index.html?setup=1" } else { "index.html" }));
 }
 
-fn build_window(app: &AppHandle) -> tauri::Result<()> {
+fn build_window(app: &AppHandle, start: WebviewUrl) -> tauri::Result<()> {
     let cfg_nav = app.state::<AppState>().cfg.clone();
     let cfg_win = app.state::<AppState>().cfg.clone();
     let app_win = app.clone();
-    WebviewWindowBuilder::new(app, "main", launcher_url(false))
+    WebviewWindowBuilder::new(app, "main", start)
         .title("StreamChat")
         .inner_size(520.0, 820.0)
         .min_inner_size(360.0, 420.0)
@@ -482,14 +494,7 @@ fn build_tray(app: &tauri::App) -> tauri::Result<()> {
         .on_menu_event(|app, ev| match ev.id().as_ref() {
             "open" => show_main(app),
             "connection" => open_launcher(app, true),
-            "update" => {
-                if let Some(w) = app.get_webview_window("main") {
-                    if let Ok(u) = Url::parse("http://tauri.localhost/index.html?update=1") {
-                        let _ = w.navigate(u);
-                    }
-                }
-                show_main(app);
-            }
+            "update" => open_main(app, Some("index.html?update=1")),
             "quit" => {
                 *app.state::<AppState>().quitting.lock().unwrap() = true;
                 app.exit(0);
@@ -505,6 +510,14 @@ fn build_tray(app: &tauri::App) -> tauri::Result<()> {
     Ok(())
 }
 
+/// In "This PC" mode the overlay needs the server, so the app keeps running in the tray.
+fn stays_in_tray(app: &AppHandle) -> bool {
+    let state = app.state::<AppState>();
+    let cfg = state.cfg.lock().unwrap().clone();
+    let quitting = *state.quitting.lock().unwrap();
+    cfg.mode == "local" && cfg.close_to_tray && !quitting
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| show_main(app)))
@@ -518,7 +531,7 @@ fn main() {
             let cfg = load_config(&data_dir);
             app.manage(AppState { cfg: Arc::new(Mutex::new(cfg)), child: Mutex::new(None), data_dir, quitting: Mutex::new(false), update: Arc::new(Mutex::new(None)) });
             build_tray(app)?;
-            build_window(app.handle())?;
+            build_window(app.handle(), WebviewUrl::App("index.html".into()))?;
             if std::env::var_os("STREAMCHAT_NO_UPDATE_CHECK").is_none() {
                 start_update_checks(app.handle().clone());
             }
@@ -530,20 +543,19 @@ fn main() {
                     return; // pop-outs just close
                 }
                 let app = window.app_handle();
-                let state = app.state::<AppState>();
-                let cfg = state.cfg.lock().unwrap().clone();
-                // In "This PC" mode the overlay needs the server, so keep running in the tray.
-                if cfg.mode == "local" && cfg.close_to_tray && !*state.quitting.lock().unwrap() {
+                if stays_in_tray(app) {
                     api.prevent_close();
                     let _ = window.hide();
+                    unload::later(app, |_| {});
                 }
             }
         })
         .build(tauri::generate_context!())
         .expect("error while building StreamChat")
-        .run(|app, event| {
-            if let RunEvent::Exit = event {
-                stop_local(&app.state::<AppState>());
-            }
+        .run(|app, event| match event {
+            // Unloading the last window must not stop the server; Quit passes a code.
+            RunEvent::ExitRequested { api, code: None, .. } if stays_in_tray(app) => api.prevent_exit(),
+            RunEvent::Exit => stop_local(&app.state::<AppState>()),
+            _ => {}
         });
 }

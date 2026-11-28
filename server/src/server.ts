@@ -22,6 +22,7 @@ import pkg from '../package.json' with { type: 'json' };
 import { UserError } from './connectors/base.ts';
 import type { EventMessage, Item, Platform } from './types.ts';
 import { PLATFORMS } from './types.ts';
+import { deliver } from './deliver.ts';
 
 const log = logger('server');
 export const VERSION: string = pkg.version;
@@ -466,10 +467,10 @@ const appClients = new Set<WebSocket>();
 const overlayClients = new Set<WebSocket>();
 
 function send(ws: WebSocket, msg: unknown) {
-  if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(msg));
+  deliver(ws, JSON.stringify(msg));
 }
-function broadcastApp(msg: unknown) { const s = JSON.stringify(msg); for (const c of appClients) if (c.readyState === c.OPEN) c.send(s); }
-function broadcastOverlay(msg: unknown) { const s = JSON.stringify(msg); for (const c of overlayClients) if (c.readyState === c.OPEN) c.send(s); }
+function broadcastApp(msg: unknown) { const s = JSON.stringify(msg); for (const c of appClients) deliver(c, s); }
+function broadcastOverlay(msg: unknown) { const s = JSON.stringify(msg); for (const c of overlayClients) deliver(c, s); }
 
 hub.on('hub', (ev: HubEvent) => {
   broadcastApp(ev);
